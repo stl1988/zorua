@@ -33,7 +33,6 @@ import { BADGE_AWARD_KIND, BADGE_DEFINITION_KIND, isProfileBadgesEvent, parseBad
 import { useBadgeDefinitions } from '@/hooks/useBadgeDefinitions';
 import { BadgeThumbnail } from '@/components/BadgeThumbnail';
 import { extractZapAmount, extractZapSender, extractZapMessage } from '@/hooks/useEventInteractions';
-import { extractOnchainZapClaimedAmount, extractOnchainZapRecipients, useVerifiedOnchainZap } from '@/hooks/useOnchainZaps';
 import { getAvatarShape } from '@/lib/avatarShape';
 import { useFormatMoney } from '@/hooks/useFormatMoney';
 import { timeAgo } from '@/lib/timeAgo';

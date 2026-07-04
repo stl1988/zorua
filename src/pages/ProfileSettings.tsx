@@ -28,7 +28,7 @@ import { IntroImage } from '@/components/IntroImage';
 import { HelpTip } from '@/components/HelpTip';
 import { ImageCropDialog } from '@/components/ImageCropDialog';
 import { SortableList, SortableItem } from '@/components/SortableList';
-import { PaymentTargetsEditor, type PaymentTargetsEditorHandle } from '@/components/PaymentTargetsEditor';
+
 import { useAppContext } from '@/hooks/useAppContext';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { parseAuthorEvent } from '@/hooks/useAuthor';
@@ -586,8 +586,6 @@ export function ProfileSettings() {
   // Image pick: open crop dialog
   const pickInputRef = useRef<HTMLInputElement>(null);
   const pendingField = useRef<'picture' | 'banner'>('picture');
-  const paymentTargetsRef = useRef<PaymentTargetsEditorHandle>(null);
-
   const handlePickImage = (field: 'picture' | 'banner') => {
     pendingField.current = field;
     pickInputRef.current?.click();
@@ -660,12 +658,6 @@ export function ProfileSettings() {
       await publishEvent({ kind: 0, content: JSON.stringify(data) });
       queryClient.invalidateQueries({ queryKey: ['logins'] });
       queryClient.invalidateQueries({ queryKey: ['author', user.pubkey] });
-
-      // Persist payment targets (kind 10133) alongside the profile. If it
-      // fails or doesn't validate, the editor surfaces its own error toast;
-      // skip the success confirmation so the user knows something was off.
-      const targetsSaved = (await paymentTargetsRef.current?.save()) ?? true;
-      if (!targetsSaved) return;
 
       toast({ title: 'Profile saved' });
     } catch {
@@ -895,13 +887,6 @@ export function ProfileSettings() {
               above so a birthday change never drags along unsaved edits. */}
           <div className="border-t pt-5">
             <BirthdaySection />
-          </div>
-
-          {/* Accept Donations — NIP-A3 payment targets (kind 10133). Self-
-              contained: publishes its own event with its own save button,
-              independent of the kind-0 profile form above. */}
-          <div className="border-t pt-5">
-            <PaymentTargetsEditor ref={paymentTargetsRef} />
           </div>
 
           {/* Advanced */}

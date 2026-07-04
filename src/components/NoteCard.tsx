@@ -141,7 +141,6 @@ import { useEventStats } from "@/hooks/useTrending";
 import { useFormatMoney } from "@/hooks/useFormatMoney";
 import { extractZapMessage } from "@/hooks/useEventInteractions";
 import { getZapAmountSats, getZapSenderPubkey } from "@/lib/zapHelpers";
-import { extractOnchainZapRecipients } from "@/hooks/useOnchainZaps";
 import { getContentWarning } from "@/lib/contentWarning";
 import { getDisplayName } from "@/lib/getDisplayName";
 import { usePollVoteLabel } from "@/hooks/usePollVoteLabel";
@@ -380,13 +379,8 @@ export const NoteCard = memo(function NoteCard({
   // Love List membership — shows a small heart next to loved authors' names.
   const { isLoved } = useLoveList();
   const authorIsLoved = isLoved(event.pubkey);
-  // Sender of a zap event (kind 9735 or 8333). `getZapSenderPubkey` handles
-  // both kinds — kind 9735 reads the P tag / description.pubkey because the
-  // receipt is signed by the LNURL server, kind 8333 returns `event.pubkey`
-  // directly because the sender authors the on-chain attestation. Returns
-  // `''` only when the event isn't a zap or the sender can't be resolved.
   const zapSenderPubkey = useMemo(
-    () => (event.kind === 9735 || event.kind === 8333 ? getZapSenderPubkey(event) : ''),
+    () => (event.kind === 9735 ? getZapSenderPubkey(event) : ''),
     [event],
   );
   const zapSender = useAuthor(zapSenderPubkey || undefined);
@@ -569,15 +563,8 @@ export const NoteCard = memo(function NoteCard({
   const isAttestation = event.kind === ATTESTATION_KIND;
   const isCampaign = event.kind === 33863;
   const isVanish = event.kind === 62;
-  const isZap = event.kind === 9735 || event.kind === 8333;
-  // Multi-recipient onchain zap (NIP-BC batch form): more than one `p` tag.
-  // Renders as a standalone zap activity card with an avatar stack instead
-  // of the single-recipient "headline" layout where one recipient takes the
-  // place of the post author.
-  const isMultiRecipientOnchainZap = useMemo(
-    () => event.kind === 8333 && extractOnchainZapRecipients(event).length > 1,
-    [event],
-  );
+  const isZap = event.kind === 9735;
+  const isMultiRecipientOnchainZap = false;
   const isProfile = event.kind === 0;
   const isBlobbiState = event.kind === 31124;
   const blobbiCompanion = useMemo(() => isBlobbiState ? parseBlobbiEvent(event) : null, [event, isBlobbiState]);

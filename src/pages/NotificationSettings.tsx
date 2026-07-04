@@ -43,8 +43,8 @@ const NOTIFICATION_TYPES: NotificationTypeRow[] = [
   {
     key: 'zaps',
     label: 'Zaps',
-    kinds: [9735, 8333],
-    description: 'When someone sends you a lightning or on-chain zap',
+    kinds: [9735],
+    description: 'When someone sends you a lightning zap',
     icon: <Zap className="size-5" />,
   },
   {

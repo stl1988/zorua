@@ -20,13 +20,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { QRCodeCanvas } from '@/components/ui/qrcode';
-import { OnchainZapContent } from '@/components/OnchainZapContent';
 import { GenericPaymentContent } from '@/components/GenericPaymentContent';
 import { PaymentMethodIcon } from '@/components/PaymentMethodIcon';
 import { ZapSuccessScreen } from '@/components/ZapSuccessScreen';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useAuthor } from '@/hooks/useAuthor';
-import { useBitcoinSigner } from '@/hooks/useBitcoinSigner';
 import { useToast } from '@/hooks/useToast';
 import { useZaps } from '@/hooks/useZaps';
 import { useWallet } from '@/hooks/useWallet';
@@ -36,20 +34,16 @@ import { canZap } from '@/lib/canZap';
 import { parseCampaign } from '@/lib/campaign';
 import {
   PAYMENT_METHODS,
-  findBitcoinTarget,
   findLightningTarget,
-  isSilentPaymentLike,
   type PaymentMethodDef,
   type PaymentTarget,
 } from '@/lib/paymentTargets';
-import type { BitcoinRecipientOverride } from '@/hooks/useOnchainZap';
 import {
   fetchBtcPrice,
   isLargeAmount,
   satsToUSD,
 } from '@/lib/bitcoinMoney';
 import type { Event } from 'nostr-tools';
-import type { NostrEvent } from '@nostrify/nostrify';
 import type { WebLNProvider } from '@webbtc/webln-types';
 
 export interface ZapDialogProps {
@@ -379,7 +373,6 @@ export function ZapDialogImpl({
   // Success state: populated by either zap rail's onSuccess callback.
   // When set, we replace the method UI with <ZapSuccessScreen />.
   const [success, setSuccess] = useState<
-    | { kind: 'onchain'; amountSats: number; txid: string }
     | { kind: 'lightning'; amountSats: number }
     | null
   >(null);
@@ -428,25 +421,7 @@ export function ZapDialogImpl({
   // so `insufficient` stays false — kept for symmetry with the onchain props.
   const insufficient = false;
 
-  // Default method: Bitcoin. Users can switch to Lightning or any configured
-  // payment target via the title dropdown. If the user's signer can't sign
-  // PSBTs AND Lightning is available, we transparently default to Lightning
-  // instead of showing an unusable Bitcoin method as the primary option.
-  const { capability: btcCapability } = useBitcoinSigner();
   const hasLightning = canZap(author?.metadata);
-  const bitcoinUnsupported = btcCapability === 'unsupported';
-
-  // A Bitcoin payment target overrides the recipient's derived Taproot
-  // address. An `sp1…` code routes onto the silent-payment rail (no kind
-  // 8333); a `bc1…` address keeps the standard on-chain attribution.
-  const bitcoinTarget = useMemo(() => findBitcoinTarget(paymentTargets), [paymentTargets]);
-  const bitcoinOverride: BitcoinRecipientOverride | undefined = useMemo(() => {
-    if (!bitcoinTarget) return undefined;
-    return {
-      value: bitcoinTarget.authority,
-      mode: isSilentPaymentLike(bitcoinTarget.authority) ? 'sp' : 'onchain',
-    };
-  }, [bitcoinTarget]);
 
   // Generic (non-native) payment targets — Monero, Ethereum, etc. These render
   // a QR + native-URI button rather than a built-in send flow.
@@ -459,12 +434,10 @@ export function ZapDialogImpl({
   );
 
   // Build the ordered list of selectable methods for this dialog.
-  // Campaigns always render the single on-chain pane (no method switcher).
+  // Lightning is the only native method; onchain Bitcoin is removed.
   const methods = useMemo<DialogMethod[]>(() => {
     if (campaign) return [];
-    const list: DialogMethod[] = [
-      { id: 'bitcoin', def: PAYMENT_METHODS.bitcoin },
-    ];
+    const list: DialogMethod[] = [];
     if (hasLightning || lightningTarget) {
       list.push({ id: 'lightning', def: PAYMENT_METHODS.lightning });
     }
@@ -474,8 +447,7 @@ export function ZapDialogImpl({
     return list;
   }, [campaign, hasLightning, lightningTarget, genericTargets]);
 
-  const defaultMethodId: DialogMethodId =
-    bitcoinUnsupported && (hasLightning || lightningTarget) ? 'lightning' : 'bitcoin';
+  const defaultMethodId: DialogMethodId = 'lightning';
   const [activeMethod, setActiveMethod] = useState<DialogMethodId>(defaultMethodId);
 
   const currentMethod =
@@ -660,10 +632,7 @@ export function ZapDialogImpl({
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <>
-                Send Bitcoin{' '}
-                <HelpTip faqId="send-bitcoin-onchain" />
-              </>
+              <>Lightning Payment</>
             )}
           </DialogTitle>
           <button
@@ -680,29 +649,13 @@ export function ZapDialogImpl({
               recipientLabel={campaign?.title}
               amountSats={success.amountSats}
               btcPrice={btcPrice}
-              txid={success.kind === 'onchain' ? success.txid : undefined}
-              onClose={() => setOpen(false)}
-            />
-          ) : campaign ? (
-            // Campaign donations (kind 33863) use the single-pane on-chain UI,
-            // routing the send through the campaign's `w` endpoint.
-            <OnchainZapContent
-              target={target}
-              campaign={campaign}
-              onSuccess={({ txid, amountSats }) =>
-                setSuccess({ kind: 'onchain', amountSats, txid })
-              }
               onClose={() => setOpen(false)}
             />
           ) : (
             <ZapMethodPane
               method={currentMethod}
               target={target}
-              bitcoinOverride={bitcoinOverride}
               lightningContentProps={lightningContentProps}
-              onOnchainSuccess={({ txid, amountSats }) =>
-                setSuccess({ kind: 'onchain', amountSats, txid })
-              }
               onClose={() => setOpen(false)}
             />
           )}
@@ -712,45 +665,27 @@ export function ZapDialogImpl({
   );
 }
 
-/** Title label for the current method (native Bitcoin keeps "Send Bitcoin"). */
+/** Title label for the current method. */
 function methodTitle(method: DialogMethod | undefined): string {
-  if (!method) return 'Send Bitcoin';
-  if (method.def.kind === 'bitcoin') return 'Send Bitcoin';
+  if (!method) return 'Lightning Payment';
   return method.def.label;
 }
 
 interface ZapMethodPaneProps {
   method: DialogMethod | undefined;
   target: Event;
-  bitcoinOverride: BitcoinRecipientOverride | undefined;
   lightningContentProps: LightningZapContentProps;
-  onOnchainSuccess: (result: { txid: string; amountSats: number }) => void;
   onClose: () => void;
 }
 
 /** Renders the body for the currently-selected payment method. */
 function ZapMethodPane({
   method,
-  target,
-  bitcoinOverride,
   lightningContentProps,
-  onOnchainSuccess,
-  onClose,
 }: ZapMethodPaneProps) {
-  if (method?.def.kind === 'lightning') {
-    return <LightningZapContent {...lightningContentProps} />;
-  }
   if (method?.def.kind === 'generic' && method.target) {
     return <GenericPaymentContent method={method.def} target={method.target} />;
   }
-  // Default: native Bitcoin. Profile zaps use the derived Taproot address
-  // unless a Bitcoin payment target overrides it.
-  return (
-    <OnchainZapContent
-      target={target as NostrEvent}
-      bitcoinTarget={bitcoinOverride}
-      onSuccess={onOnchainSuccess}
-      onClose={onClose}
-    />
-  );
+  // Default: Lightning.
+  return <LightningZapContent {...lightningContentProps} />;
 }

@@ -17,7 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CustomEmojiImg, EmojifiedText } from '@/components/CustomEmoji';
 import { isCustomEmoji } from '@/lib/customEmoji';
 import { useEventInteractions, type RepostEntry, type QuoteEntry, type ReactionEntry, type ZapEntry } from '@/hooks/useEventInteractions';
-import { useOnchainZaps, type OnchainZapEntry } from '@/hooks/useOnchainZaps';
+
 import { useAuthor } from '@/hooks/useAuthor';
 import { VerifiedNip05Text } from '@/components/Nip05Badge';
 import { timeAgo } from '@/lib/timeAgo';
@@ -27,12 +27,7 @@ import { cn } from '@/lib/utils';
 
 export type InteractionTab = 'reposts' | 'quotes' | 'reactions' | 'zaps';
 
-/**
- * Unified zap row view-model. Kind 9735 (Lightning receipts) and kind 8333
- * (on-chain) both feed into this single shape so the Zaps tab can render
- * them in a single sorted list with identical UI. Callers should never
- * branch on rail when rendering — the whole point is visual parity.
- */
+/** Unified zap row view-model for display in the Zaps tab. */
 interface UnifiedZap {
   /** Unique key for React list diffing. */
   key: string;
@@ -50,9 +45,7 @@ interface UnifiedZap {
 }
 
 interface InteractionsModalProps {
-  /** The target event. Required so we can fetch on-chain zaps (kind 8333),
-   * which need the full event to compute the `a` coordinate for
-   * addressable kinds. */
+  /** The target event. */
   target: NostrEvent;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -63,10 +56,6 @@ interface InteractionsModalProps {
 export function InteractionsModal({ target, open, onOpenChange, initialTab = 'reposts' }: InteractionsModalProps) {
   const [activeTab, setActiveTab] = useState<InteractionTab>(initialTab);
   const { data, isLoading } = useEventInteractions(open ? target.id : undefined);
-  const { zaps: onchainZaps, isLoading: isLoadingOnchain } = useOnchainZaps(
-    open ? target : undefined,
-  );
-
   // Sync active tab whenever initialTab changes (e.g. clicking a different stat while modal is already open)
   useEffect(() => {
     setActiveTab(initialTab);
@@ -76,11 +65,17 @@ export function InteractionsModal({ target, open, onOpenChange, initialTab = 're
     onOpenChange(value);
   };
 
-  // Merge the two zap streams into a single chronologically-sorted list of
-  // UnifiedZap view-models so ZapsTab doesn't have to branch on rail.
   const unifiedZaps = useMemo(
-    () => mergeZaps(data?.zaps ?? [], onchainZaps),
-    [data?.zaps, onchainZaps],
+    () => (data?.zaps ?? []).map((z): UnifiedZap => ({
+      key: `ln:${z.eventId}`,
+      senderPubkey: z.senderPubkey,
+      amountSats: z.amountSats,
+      message: z.message,
+      createdAt: z.createdAt,
+      linkPubkey: z.senderPubkey,
+      linkEventId: z.eventId,
+    })).sort((a, b) => b.createdAt - a.createdAt),
+    [data?.zaps],
   );
 
   const repostCount = data?.reposts.length ?? 0;
@@ -415,34 +410,6 @@ function ZapRow({ zap }: { zap: UnifiedZap }) {
   );
 }
 
-/**
- * Merge kind 9735 and kind 8333 zap entries into a single chronologically
- * sorted list (newest first). Dedup is handled upstream by the two query
- * hooks — this function trusts its inputs.
- */
-function mergeZaps(lightning: ZapEntry[], onchain: OnchainZapEntry[]): UnifiedZap[] {
-  const lnRows: UnifiedZap[] = lightning.map((z) => ({
-    key: `ln:${z.eventId}`,
-    senderPubkey: z.senderPubkey,
-    amountSats: z.amountSats,
-    message: z.message,
-    createdAt: z.createdAt,
-    linkPubkey: z.senderPubkey,
-    linkEventId: z.eventId,
-  }));
-
-  const btcRows: UnifiedZap[] = onchain.map((z) => ({
-    key: `btc:${z.event.id}`,
-    senderPubkey: z.senderPubkey,
-    amountSats: z.amountSats,
-    message: z.comment,
-    createdAt: z.createdAt,
-    linkPubkey: z.senderPubkey,
-    linkEventId: z.event.id,
-  }));
-
-  return [...lnRows, ...btcRows].sort((a, b) => b.createdAt - a.createdAt);
-}
 
 function QuoteRow({ quote }: { quote: QuoteEntry }) {
   const author = useAuthor(quote.pubkey);
