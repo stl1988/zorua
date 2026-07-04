@@ -1,0 +1,96 @@
+# Zorua
+
+> A fun, customizable Nostr client built on open protocols. Your content, your vibe, your rules.
+
+- Current version: 2.28.2
+- Deployed at: https://zorua.shakespeare.wtf
+- Source: https://github.com/stl1988/zorua
+- Based on: Ditto (https://ditto.pub / https://gitlab.com/soapbox-pub/ditto)
+- License: AGPL-3.0
+
+## What is Zorua?
+
+Zorua is a self-hosted, open-source social media client built on the [Nostr](https://nostr.com/) protocol. It is a fork of [Ditto](https://ditto.pub) by Soapbox, rebranded and customized by stl1988. The app lets users post, interact, and own their identity and data — no central server, no Big Tech intermediary.
+
+The name is a reference to Zorua, a dark-type creature known for transforming into other forms but revealing its true self when it matters. This mirrors the spirit of Nostr: you appear where you choose, but your cryptographic identity is always yours.
+
+## Tech Stack
+
+- **React 19** with TypeScript — UI framework
+- **TailwindCSS 3** — utility-first styling
+- **Vite** — build tool
+- **shadcn/ui** — accessible component primitives
+- **Nostrify** (`@nostrify/react`) — Nostr protocol layer
+- **TanStack Query** — data fetching and caching
+- **React Router 6** — client-side routing
+- **Capacitor** — native Android wrapper
+
+## Key Features
+
+- **Theming** — built-in theme presets (including the default Zorua dark-red theme), 19 CSS token properties, and the ability to publish/share themes as Nostr events
+- **Content types** — text notes, articles, short-form video (Divines), live streams, polls, follow packs, color moments, geocaching, music tracks, encrypted letters, Webxdc mini-apps, bird observations, weather readings, and more
+- **Lightning zaps** — tip posts and profiles with sats via Nostr Wallet Connect (NWC) or WebLN
+- **Comments** — comment on anything: posts, URLs, profiles, hashtags, books, and more (NIP-22)
+- **Blobbi virtual pets** — raise, hatch, evolve, and trade virtual pets stored as Nostr events (NIP-BB)
+- **Notifications** — real-time push notifications on Android with picture, stacking, and battery-optimization guidance
+- **Birthdays** — set and celebrate birthdays with confetti, balloons, and party hats
+- **Search** — full-text search with filters for media type, language, kind, and author scope
+- **Self-hosting** — builds to static HTML/JS/CSS; deploy anywhere
+
+## Privacy Stance
+
+- **No on-chain Bitcoin zaps.** Zorua does not derive Bitcoin Taproot addresses from Nostr pubkeys. Doing so would link your on-chain identity directly to your Nostr identity, undermining privacy and plausible deniability. Lightning zaps are fully supported.
+- **No central server.** All data is stored on Nostr relays you configure. The app itself is static files.
+- **No tracking.** No analytics, no telemetry, no ad networks.
+- **Keys stay yours.** Private keys are held by the user's own signer (browser extension, nsec bunker, or in-app). The app never sees them.
+
+## Default Relays
+
+```
+wss://relay.ditto.pub
+wss://relay.primal.net
+wss://relay.damus.io
+```
+
+## Custom Event Kinds (NIP.md)
+
+| Kind  | Name                  | Description                                          |
+|-------|-----------------------|------------------------------------------------------|
+| 15683 | Love List             | The people the user truly loves (one per user)       |
+| 36767 | Theme Definition      | Shareable, named custom UI theme                     |
+| 16767 | Active Profile Theme  | The user's currently active theme (one per user)     |
+| 16769 | Profile Tabs          | The user's custom profile page tabs (one per user)   |
+| 1124  | Blobbi Social Interaction | Immutable interaction log for Blobbi social interactions |
+| 11125 | Blobbonaut Profile    | Owner profile with coins, achievements, and inventory |
+| 31124 | Blobbi Pet State      | Current state of a virtual Blobbi pet (addressable)  |
+| 33863 | Fundraiser            | Self-authored Bitcoin fundraising campaign           |
+| 36787 | Music Track           | Addressable event for a music audio file             |
+| 34139 | Music Playlist        | Ordered list of music track references               |
+
+## Project Structure
+
+```
+src/
+  components/    UI components (100+), shadcn/ui primitives in ui/
+  hooks/         Custom React hooks (65+)
+  pages/         Page components for each route (30+)
+  contexts/      React context providers (AppContext, NWCContext)
+  lib/           Utilities and shared logic
+  blobbi/        Blobbi virtual pet subsystem
+  test/          Test setup and helpers
+public/
+  CHANGELOG.md   Runtime changelog (fetched by the changelog page)
+  llms.txt       This file
+  logo.svg       App icon (dark fox/mask shape in dark red)
+  og-image.jpg   Open Graph social preview image
+  theme.js       Blocking pre-React theme loader
+```
+
+## For AI Assistants
+
+- The project is a Marlowe/Shakespeare-based app; see AGENTS.md for full contributor guidelines
+- Always update `public/llms.txt`, `CHANGELOG.md`, `public/CHANGELOG.md`, `package.json`, and `android/app/build.gradle` whenever code changes are made
+- The `appName` is "Zorua" and `appId` is "zorua" (set in `src/App.tsx`)
+- Theme system: `src/themes.ts` — builtinThemes dark uses `background: "0 0% 10%"`, `primary: "0 65% 40%"` (very dark grey + dark red)
+- On-chain Bitcoin zaps (kind 8333, Taproot address derivation) are intentionally removed; do not re-add them
+- Nostr pubkeys must never be used to derive Bitcoin addresses in this project

@@ -340,6 +340,16 @@ Load the **`capacitor-compat`** skill for the full list of installed plugins, pl
 
 **Writing new test files — don't, unless the user asks.** If the user explicitly requests tests, describes a bug to diagnose with a test, or reports that a problem persists after a fix, load the **`testing`** skill for Ditto's Vitest + `TestApp` setup and policy.
 
+## Changelog, Version, and llms.txt — Always Update
+
+**Every code change must be accompanied by three housekeeping updates. Do not skip any of them.**
+
+1. **Changelog** — Add a new semver entry at the top of both `CHANGELOG.md` (project root) and `public/CHANGELOG.md` (served at runtime by the changelog page). Use today's date. Follow Keep-a-Changelog conventions: `### Added`, `### Changed`, `### Removed`, `### Fixed`. Write human-readable prose for the summary paragraph and bullet-point items in plain English — no jargon, no internal variable names.
+
+2. **Version number** — Bump `version` in `package.json` and `versionName` in `android/app/build.gradle`. Use semantic versioning: patch (`x.y.Z`) for fixes and removals, minor (`x.Y.0`) for new user-visible features, major (`X.0.0`) for breaking changes. Also increment `versionCode` (integer) in `android/app/build.gradle` by 1 each release.
+
+3. **`public/llms.txt`** — Update the "Current version" line and, if relevant, the feature list or privacy notes to reflect the change. This file is the machine-readable project summary for AI assistants.
+
 ## Validating Your Changes
 
 **Your task is not finished until the code type-checks and builds without errors.** Run validation in priority order, commit when done. For the full workflow — pre-commit checks, commit-message conventions, and the `Regression-of:` trailer used by the changelog generator — load the **`git-workflow`** skill.
