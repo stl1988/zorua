@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.28.3] - 2026-07-04
+
+Fixes a crash when opening a post detail page for an old on-chain Bitcoin zap. The page now renders those posts normally without the removed on-chain zap card.
+
+### Fixed
+- Fixed a crash on the post detail page when viewing an on-chain Bitcoin zap, caused by leftover code from the on-chain zap removal in 2.28.2
+
 ## [2.28.2] - 2026-07-04
 
 This release rebrands the app as Zorua, introduces a new dark grey and dark red default theme, and removes on-chain Bitcoin zaps. Sending Bitcoin using your Nostr key as a Taproot address links your on-chain identity directly to your Nostr identity — a privacy risk that undermines plausible deniability. Lightning zaps remain fully supported.

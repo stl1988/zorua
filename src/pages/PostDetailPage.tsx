@@ -80,7 +80,6 @@ import { UnknownKindContent } from "@/components/UnknownKindContent";
 import { NsiteCard } from "@/components/NsiteCard";
 import { NoteMoreMenu } from "@/components/NoteMoreMenu";
 import { PostActionBar } from "@/components/PostActionBar";
-import { PeopleAvatarStack } from "@/components/PeopleAvatarStack";
 import { PatchCard } from "@/components/PatchCard";
 import { PodcastDetailContent } from "@/components/PodcastDetailContent";
 import { PollContent } from "@/components/PollContent";
@@ -1272,11 +1271,6 @@ function PostDetailContent({ event }: { event: NostrEvent }) {
   const zapSenderDisplayName = getDisplayName(zapSenderMeta, zapSenderPubkeyRaw);
   const zapSenderProfileUrl = useProfileUrl(zapSenderPubkeyRaw, zapSenderMeta);
 
-  // For kind 8333 on-chain zaps, verify the tx against mempool.space so we
-  // can display the real paid amount instead of the self-reported tag.
-  // `useVerifiedOnchainZap` is a no-op when the kind isn't 8333.
-  const verifiedOnchainZap = useVerifiedOnchainZap(event.kind === 8333 ? event : undefined);
-
   const pollVoteLabel = usePollVoteLabel(event);
 
   // Celebration effect — same as the feed (see NoteCard): text notes with
@@ -1359,7 +1353,6 @@ function PostDetailContent({ event }: { event: NostrEvent }) {
   const isCampaign = event.kind === 33863;
   const isVanish = event.kind === VANISH_KIND;
   const isZap = event.kind === 9735;
-  const isOnchainZap = event.kind === 8333;
   const isProfile = event.kind === 0;
   const isBlobbiState = event.kind === 31124;
   const isBadgeAward = event.kind === BADGE_AWARD_KIND;
@@ -2167,92 +2160,6 @@ function PostDetailContent({ event }: { event: NostrEvent }) {
         );
       })()}
 
-      {/* Kind 8333 — On-chain zap: render the same shape as the 9735 zap
-          card above. The two rails look intentionally identical so readers
-          don't have to reason about Lightning vs. on-chain; a small
-          "verifying…" / "unverified" hint is the only tell. */}
-      {isOnchainZap && (() => {
-        const claimed = extractOnchainZapClaimedAmount(event);
-        const amountSats = verifiedOnchainZap?.amountSats ?? claimed;
-        const isVerifying = verifiedOnchainZap === undefined;
-        const failedVerification = verifiedOnchainZap === null;
-        const zapMsg = event.content;
-        // Multi-recipient batch zap (NIP-BC) — show an avatar stack so the
-        // viewer sees who got paid. The single-recipient case is implicit
-        // when the zap targets a specific event (the recipient is the
-        // event's author) or shown elsewhere for profile-targeted zaps.
-        const recipientPubkeys = extractOnchainZapRecipients(event);
-        const isMultiRecipient = recipientPubkeys.length > 1;
-        // Sender is the author (self-signed, unlike 9735 where the LNURL server signs).
-        return (
-          <article ref={focusedPostRef} className="px-4 pt-3 pb-0">
-            <div className="flex items-center gap-3">
-              {/* Amber bolt bubble — identical to the Lightning card. */}
-              <div className="flex items-center justify-center size-10 rounded-full bg-amber-500/10 shrink-0">
-                <Zap className="size-5 text-amber-500 fill-amber-500" />
-              </div>
-
-              <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap">
-                <ProfileHoverCard pubkey={event.pubkey} asChild>
-                  <Link to={profileUrl} className="shrink-0">
-                    <Avatar shape={avatarShape} className="size-6">
-                      <AvatarImage src={metadata?.picture} alt={displayName} />
-                      <AvatarFallback className="bg-primary/20 text-primary text-[10px]">
-                        {displayName[0]?.toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Link>
-                </ProfileHoverCard>
-                <ProfileHoverCard pubkey={event.pubkey} asChild>
-                  <Link to={profileUrl} className="font-bold text-sm hover:underline truncate">
-                    {author.data?.event ? (
-                      <EmojifiedText tags={author.data.event.tags}>{displayName}</EmojifiedText>
-                    ) : displayName}
-                  </Link>
-                </ProfileHoverCard>
-                <span className="text-sm text-muted-foreground">
-                  zapped
-                  {isMultiRecipient && ` ${recipientPubkeys.length} people`}
-                </span>
-                {amountSats > 0 && (
-                  <span className="text-sm font-semibold text-amber-500 shrink-0">
-                    {formatMoney(amountSats)}
-                  </span>
-                )}
-                {failedVerification ? (
-                  <span className="text-[11px] text-muted-foreground shrink-0">· unverified</span>
-                ) : isVerifying ? (
-                  <span className="text-[11px] text-muted-foreground shrink-0">· verifying…</span>
-                ) : null}
-              </div>
-            </div>
-
-            {isMultiRecipient && (
-              <div className="mt-2 pl-[52px]">
-                <PeopleAvatarStack pubkeys={recipientPubkeys} size="md" maxVisible={8} />
-              </div>
-            )}
-
-            {zapMsg && (
-              <p className="text-sm text-muted-foreground italic pl-[52px]">&ldquo;{zapMsg}&rdquo;</p>
-            )}
-
-            {statsAndDateRow}
-
-            <PostActionBar
-              event={event}
-              onReply={() => setReplyOpen(true)}
-              onMore={() => setMoreMenuOpen(true)}
-              className="-mx-4 px-4"
-            />
-
-            <NoteMoreMenu event={event} open={moreMenuOpen} onOpenChange={setMoreMenuOpen} />
-            <ReplyComposeModal event={event} open={replyOpen} onOpenChange={setReplyOpen} />
-            <InteractionsModal target={event} open={interactionsOpen} onOpenChange={setInteractionsOpen} initialTab={interactionsTab} />
-          </article>
-        );
-      })()}
-
       {/* Kind 0 — Profile: show the ProfileCard directly, no action header */}
       {isProfile && (() => {
         let parsedMeta: Record<string, unknown> = {};
@@ -2461,7 +2368,7 @@ function PostDetailContent({ event }: { event: NostrEvent }) {
       )}
 
       {/* Main post — expanded Ditto-style view */}
-      {!isReaction && !isRepost && !isVanish && !isZap && !isOnchainZap && !isProfile && !isPollVote && (
+      {!isReaction && !isRepost && !isVanish && !isZap && !isProfile && !isPollVote && (
         <article
           ref={focusedPostRef}
           className={cn(

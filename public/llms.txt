@@ -2,7 +2,7 @@
 
 > A fun, customizable Nostr client built on open protocols. Your content, your vibe, your rules.
 
-- Current version: 2.28.2
+- Current version: 2.28.3
 - Deployed at: https://zorua.shakespeare.wtf
 - Source: https://github.com/stl1988/zorua
 - Based on: Ditto (https://ditto.pub / https://gitlab.com/soapbox-pub/ditto)
