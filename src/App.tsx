@@ -42,8 +42,8 @@ const queryClient = new QueryClient({
 
 /** Hardcoded fallback values. Always provides every required field. */
 const hardcodedConfig: AppConfig = {
-  appName: "Ditto",
-  appId: "ditto",
+  appName: "Zorua",
+  appId: "zorua",
   shareOrigin: import.meta.env.VITE_SHARE_ORIGIN || undefined,
   homePage: "feed",
   client: "naddr1qvzqqqru7cpzq7q6z5ns2hm5c8msyv83qwzxpxe52j8c4d4q5m92wsp9sflelkh9qqzkg6t5w3hswjl4yp",

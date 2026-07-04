@@ -320,7 +320,7 @@ function DonateButton({ event, wallets, title }: DonateButtonProps) {
             <DialogTitle>Donate to {title}</DialogTitle>
             <DialogDescription>
               {showZapButton
-                ? 'Zap from Ditto, open in a native wallet, or scan the QR.'
+                ? 'Zap from Zorua, open in a native wallet, or scan the QR.'
                 : 'Open in a native wallet or scan the QR.'}
             </DialogDescription>
           </DialogHeader>

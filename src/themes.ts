@@ -103,15 +103,15 @@ export interface ThemeTokens {
  */
 export const builtinThemes: Record<'light' | 'dark', CoreThemeColors> = {
   light: {
-    background: '270 50% 97%',
-    text: '270 25% 12%',
-    primary: '270 65% 55%',
+    background: '0 0% 96%',
+    text: '0 5% 12%',
+    primary: '0 65% 40%',
   },
 
   dark: {
-    background: '228 20% 10%',
-    text: '210 40% 98%',
-    primary: '258 70% 60%',
+    background: '0 0% 10%',
+    text: '0 5% 92%',
+    primary: '0 65% 40%',
   },
 };
 
@@ -138,6 +138,18 @@ export interface ThemePreset {
  * and applies the preset's core color values to customTheme.
  */
 export const themePresets: Record<string, ThemePreset> = {
+  zorua: {
+    label: 'Zorua',
+    emoji: '🔴',
+    featured: true,
+    colors: {
+      background: '0 0% 10%',
+      text: '0 5% 92%',
+      primary: '0 65% 40%',
+    },
+    font: { family: 'Inter' },
+  },
+
   pink: {
     label: 'Pink',
     emoji: '🌸',

@@ -408,7 +408,7 @@ export function NotificationSettings() {
                     <AlertTriangle className="size-4 shrink-0 text-amber-500 mt-0.5" />
                     <div className="min-w-0 flex-1">
                       <p className="text-xs">
-                        Battery optimization is enabled for Ditto. Android may cut the
+                        Battery optimization is enabled for Zorua. Android may cut the
                         background relay connection and prevent it from resuming after a
                         reboot.
                       </p>

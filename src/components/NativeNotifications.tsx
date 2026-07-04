@@ -56,7 +56,7 @@ export function NativeNotifications(): null {
         description: (
           <div className="space-y-3">
             <p>
-              Battery optimization can cut Ditto&rsquo;s background connection.
+              Battery optimization can cut Zorua&rsquo;s background connection.
               Allow background usage for dependable notifications.
             </p>
             {/* Rendered below the text instead of in the side action slot,

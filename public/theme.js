@@ -4,8 +4,8 @@
 (function () {
   // Builtin themes — must match builtinThemes in src/themes.ts
   var builtins = {
-    dark:  { bg: 'hsl(228 20% 10%)', primary: 'hsl(258 70% 60%)' },
-    light: { bg: 'hsl(270 50% 97%)', primary: 'hsl(270 65% 55%)' }
+    dark:  { bg: 'hsl(0 0% 10%)', primary: 'hsl(0 65% 40%)' },
+    light: { bg: 'hsl(0 0% 96%)', primary: 'hsl(0 65% 40%)' }
   };
 
   var theme = 'dark';

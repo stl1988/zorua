@@ -587,7 +587,7 @@ function LoginHero() {
         viewBox="0 0 176 176"
         width={208}
         height={208}
-        aria-label="Ditto"
+        aria-label="Zorua"
         role="img"
         className="relative"
         fill="none"
