@@ -1,23 +1,30 @@
-# Ditto
+# Zorua
 
 Your content. Your vibe. Your rules. A fun, customizable [Nostr](https://nostr.com/) client that puts you in control.
 
-**[ditto.pub](https://ditto.pub)** | **[Docs](https://docs.ditto.pub)** | **[Source](https://gitlab.com/soapbox-pub/ditto)**
+**[zorua.shakespeare.wtf](https://zorua.shakespeare.wtf)** | **[Source](https://github.com/stl1988/zorua)** | **[Based on Ditto](https://gitlab.com/soapbox-pub/ditto)**
+
+[![Edit with Marlowe](https://47h1rs70oqaspur8bichfzalg0wnassb8d7tslfacl7hwyaxhkmarlowe.nsite.lol/marlowe-badge.svg)](https://47h1rs70oqaspur8bichfzalg0wnassb8d7tslfacl7hwyaxhkmarlowe.nsite.lol/clone?url=https%3A%2F%2Fgithub.com%2Fstl1988%2Fzorua)
 
 ## About
 
-Ditto is an open-source, decentralized social media client built on the Nostr protocol. It's designed for people who want to have fun online without feeding the Big Tech machine. Express yourself with custom themes, Lightning payments, and an ever-growing set of content types -- all while owning your identity and data.
+Zorua is an open-source, decentralized social media client built on the Nostr protocol. It is a fork of [Ditto](https://ditto.pub) by Soapbox, customized and maintained by [stl1988](https://stl1988.shakespeare.wtf). Express yourself with custom themes, Lightning payments, and an ever-growing set of content types — all while owning your identity and data.
 
-Made by [Soapbox](https://soapbox.pub).
+The name references a dark-type shapeshifter that reveals its true self in battle — a fitting metaphor for Nostr, where your cryptographic identity is always yours regardless of which client or relay you use.
 
 ## Features
 
-- **Theming** -- 9 built-in theme presets, 19 CSS token properties for full customization, and the ability to publish and share themes as Nostr events
-- **Infinite Content Types** -- Text notes, articles, short-form videos (Divines), live streams, polls, follow packs, color moments, magic decks, geocaching, and Webxdc mini-apps
-- **Lightning Payments** -- Zap posts and profiles with sats via Nostr Wallet Connect (NWC) or WebLN
-- **Comments** -- Comment on anything: posts, URLs, profiles, hashtags, books, and more (NIP-22)
-- **Self-Hosting** -- Builds to static HTML/JS/CSS. Deploy anywhere -- GitHub Pages, Netlify, Vercel, a VPS, or a Raspberry Pi
-- **Mobile** -- Android native app via Capacitor, responsive design for all screen sizes
+- **Theming** — built-in theme presets including the signature Zorua dark-grey + dark-red palette, 19 CSS token properties for full customization, and the ability to publish and share themes as Nostr events
+- **Infinite Content Types** — text notes, articles, short-form videos (Divines), live streams, polls, follow packs, color moments, geocaching, and Webxdc mini-apps
+- **Lightning Payments** — zap posts and profiles with sats via Nostr Wallet Connect (NWC) or WebLN. On-chain Bitcoin zaps are intentionally not supported (see Privacy below)
+- **Comments** — comment on anything: posts, URLs, profiles, hashtags, books, and more (NIP-22)
+- **Blobbi virtual pets** — raise, hatch, and evolve virtual pets stored as Nostr events
+- **Self-Hosting** — builds to static HTML/JS/CSS. Deploy anywhere — GitHub Pages, Netlify, Vercel, a VPS, or a Raspberry Pi
+- **Mobile** — Android native app via Capacitor, responsive design for all screen sizes
+
+## Privacy
+
+Zorua does **not** derive Bitcoin Taproot addresses from Nostr pubkeys. This feature (present in upstream Ditto) links your on-chain identity directly to your Nostr identity, undermining privacy and plausible deniability. Lightning zaps are fully supported.
 
 ## Getting Started
 
@@ -29,8 +36,8 @@ Made by [Soapbox](https://soapbox.pub).
 ### Development
 
 ```sh
-git clone https://gitlab.com/soapbox-pub/ditto.git
-cd ditto
+git clone https://github.com/stl1988/zorua.git
+cd zorua
 npm install
 npm run dev
 ```
@@ -55,7 +62,7 @@ npm test
 
 ## Configuration
 
-Ditto is configured through a `ditto.json` file at the project root, read at build time. This file is gitignored so each deployment can have its own configuration.
+Zorua is configured through a `ditto.json` file at the project root, read at build time. This file is gitignored so each deployment can have its own configuration.
 
 ```jsonc
 {
@@ -87,18 +94,18 @@ Use an alternate config file path with: `DITTO_CONFIG_FILE=./my-config.json npm 
 
 For self-hosted instances:
 
-- Replace `public/logo.svg` and `public/logo.png` with your logo
+- Replace `public/logo.svg` with your logo
 - Update the app name in `index.html` and `public/manifest.webmanifest`
 - Replace `public/og-image.jpg` for social sharing previews
 - Set default relays and upload servers in `ditto.json`
 
 ## Deployment
 
-Ditto builds to static files and can be deployed anywhere that serves HTML.
+Zorua builds to static files and can be deployed anywhere that serves HTML.
 
-- **GitHub Pages / GitLab Pages** -- Push to `main` and CI auto-deploys
-- **Netlify / Vercel** -- Connect your fork and deploy. A `_redirects` file is included for SPA routing
-- **VPS / Any web server** -- Build and copy `dist/` to your server. Configure SPA routing (e.g., Nginx `try_files $uri $uri/ /index.html`)
+- **GitHub Pages / GitLab Pages** — push to `main` and CI auto-deploys
+- **Netlify / Vercel** — connect your fork and deploy. A `_redirects` file is included for SPA routing
+- **VPS / Any web server** — build and copy `dist/` to your server. Configure SPA routing (e.g., Nginx `try_files $uri $uri/ /index.html`)
 
 ### Android
 
@@ -114,7 +121,7 @@ npx cap open android
 
 | Layer | Technology |
 |---|---|
-| Framework | React 18 |
+| Framework | React 19 |
 | Build | Vite |
 | Language | TypeScript |
 | Styling | TailwindCSS 3 + shadcn/ui |
@@ -133,20 +140,18 @@ src/
   pages/          Page components for each route (30+)
   contexts/       React context providers
   lib/            Utilities and shared logic
+  blobbi/         Blobbi virtual pet subsystem
   test/           Test setup and helpers
-public/           Static assets, icons, manifest
+public/           Static assets, icons, manifest, llms.txt
 ```
 
 ## Contributing
 
-We welcome contributions but have high standards. Please read the full [Contributing Guide](CONTRIBUTING.md) before submitting a merge request. The short version:
+Contributions are welcome. Please keep pull requests small and focused. Use an AI coding agent for implementation. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
-- **Bug fixes**: One bug, one MR. Keep it small and focused.
-- **New features**: Must link to an existing issue and align with the [Ditto Philosophy](https://about.ditto.pub/philosophy).
-- **Required**: Live preview URL, before/after screenshots, completed self-review checklist.
-- **Required tools**: Claude Opus 4.6 (or latest frontier model), an AI coding agent with plan mode.
+## Upstream
 
-Read the [Ditto Philosophy](https://about.ditto.pub/philosophy) to understand what Ditto is and isn't.
+Zorua is a fork of [Ditto](https://gitlab.com/soapbox-pub/ditto) by [Soapbox](https://soapbox.pub), licensed under AGPL-3.0. Upstream changes are periodically merged.
 
 ## License
 

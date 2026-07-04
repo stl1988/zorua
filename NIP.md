@@ -2,7 +2,7 @@
 
 ## Event Kinds Overview
 
-### Ditto Kinds
+### Zorua Kinds
 
 | Kind  | Name                 | Description                                           |
 |-------|----------------------|-------------------------------------------------------|
@@ -14,7 +14,7 @@
 
 ### Community Kinds
 
-These event kinds were created by community contributors and are supported by Ditto. Full specifications are maintained by their respective authors.
+These event kinds were created by community contributors and are supported by Zorua. Full specifications are maintained by their respective authors.
 
 | Kind  | Name                   | Description                                                      | Spec                                                                                      |
 |-------|------------------------|------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
@@ -193,7 +193,7 @@ The kind number spells **"1·LOVE"**: on a phone keypad L=5, O=6, V=8, E=3 → `
 
 ### Content
 
-Empty by convention. Clients MAY use the NIP-51 private-items scheme (NIP-44-encrypted stringified tag array) for loves the user prefers to keep private; Ditto currently publishes public entries only and ignores ciphertext it cannot decrypt.
+Empty by convention. Clients MAY use the NIP-51 private-items scheme (NIP-44-encrypted stringified tag array) for loves the user prefers to keep private; Zorua currently publishes public entries only and ignores ciphertext it cannot decrypt.
 
 ### Client Behavior
 
@@ -211,7 +211,7 @@ Empty by convention. Clients MAY use the NIP-51 private-items scheme (NIP-44-enc
 
 ### Summary
 
-Replaceable event (one per user) that declares a user's donation endpoints — "payment targets" — as `(type, authority)` pairs in `payto` tags, following the [RFC-8905 `payto:` URI scheme](https://www.rfc-editor.org/rfc/rfc8905.html). In Ditto's UI this is surfaced as the **"Accept Donations"** section of the Edit Profile screen; the term *payment targets* is used only in code.
+Replaceable event (one per user) that declares a user's donation endpoints — "payment targets" — as `(type, authority)` pairs in `payto` tags, following the [RFC-8905 `payto:` URI scheme](https://www.rfc-editor.org/rfc/rfc8905.html). The term *payment targets* is used only in code.
 
 ### Event Structure
 
@@ -238,11 +238,11 @@ Replaceable event (one per user) that declares a user's donation endpoints — "
 
 `type` is case-insensitive and normalized to lowercase. `authority` format is payment-system-specific.
 
-### Ditto Implementation Notes
+### Zorua Implementation Notes
 
-Ditto restricts the **editable** set to a curated allowlist of recognized types and renders only those it recognizes (forward-compatible: unknown types in a fetched event are ignored, not rendered as garbage):
+Zorua restricts the **editable** set to a curated allowlist of recognized types and renders only those it recognizes (forward-compatible: unknown types in a fetched event are ignored, not rendered as garbage):
 
-| Type       | Label      | Kind in Ditto | Clickable URI                         |
+| Type       | Label      | Kind in Zorua | Clickable URI                         |
 |------------|------------|---------------|----------------------------------------|
 | `bitcoin`  | Bitcoin    | native        | n/a (uses the built-in send flow)      |
 | `lightning`| Lightning  | native        | n/a (uses the built-in zap flow)       |
@@ -253,16 +253,16 @@ Ditto restricts the **editable** set to a curated allowlist of recognized types 
 | `venmo`    | Venmo      | generic       | `https://venmo.com/u/<handle>`         |
 | `revolut`  | Revolut    | generic       | `https://revolut.me/<handle>`          |
 
-Rules Ditto enforces:
+Rules Zorua enforces:
 
 - **At most one target per type.** When parsing, the first valid target of each type wins; the editor enforces uniqueness on save.
 - **Validation per type** — each authority is validated (bech32(m)/SP checksum for Bitcoin, lightning-address/LNURL shape for Lightning, base58 for Monero, etc.). Invalid entries are dropped on parse and rejected in the editor.
 - **Precedence over derived/kind-0 values.** A `bitcoin` payment target overrides the recipient's pubkey-derived Taproot address in the zap flow; a `lightning` payment target takes precedence over the kind-0 `lud16`/`lud06`.
 - **Bitcoin target rail.** A `bc1q…`/`bc1p…` Bitcoin target sends on-chain and still publishes a kind 8333 attribution. An `sp1…` (BIP-352 silent payment) Bitcoin target sends on the silent-payment rail and publishes **no** kind 8333 event, preserving unlinkability.
-- **Native vs. generic rendering.** Bitcoin and Lightning reuse Ditto's existing purpose-built flows (no extra clickable button). Generic methods render a QR code, a copyable address, and a button that opens the **native URI** (preferred over `payto:` per the user's request) — falling back to the method's web payment page for custodial handles.
-- **Zap dialog switcher.** When a recipient has more than one available method, the zap dialog's title becomes a dropdown switcher (Bitcoin icon + down chevron) for choosing between Bitcoin, Lightning, and any declared payment targets.
+- **Native vs. generic rendering.** Lightning reuses Zorua's existing purpose-built zap flow. Generic methods render a QR code, a copyable address, and a button that opens the **native URI** (preferred over `payto:` per the user's request) — falling back to the method's web payment page for custodial handles.
 
-Ditto does **not** generate or render `payto://` URIs; it prefers each method's native scheme.
+
+Zorua does **not** generate or render `payto://` URIs; it prefers each method's native scheme.
 
 ---
 
@@ -553,7 +553,7 @@ The `shape` field is added to the JSON content of a kind 0 event alongside stand
 
 ## Community NIP Specifications
 
-The following specifications are maintained by their respective authors. Ditto implements these kinds but does not own the specs. See each link for the full event structure, tags, and client behavior.
+The following specifications are maintained by their respective authors. Zorua implements these kinds but does not own the specs. See each link for the full event structure, tags, and client behavior.
 
 ### Color Moments (Kind 3367)
 
@@ -571,9 +571,9 @@ Color palette posts capturing 3-6 colors from a beautiful moment, optionally acc
 
 Birdstar merges Birdsong Spotter (a bird-by-ear checklist) and Starpoint (an interactive sky map with community constellations) into a single client.
 
-- **Kind 2473 — Bird Detection.** A regular event representing a single identified bird observation. The species is identified by a NIP-73 `i`/`k` pair pointing at the species' Wikidata entity URI (e.g. `https://www.wikidata.org/entity/Q26825` for the American Robin). The `content` field holds an optional freeform human note about the detection. Required tags: NIP-31 `alt`, NIP-73 `i` (Wikidata URL) + `k` (`web`). Ditto renders detections as a species card with the Wikipedia thumbnail, common/scientific name, and article summary.
-- **Kind 12473 — Birdex.** A replaceable event (one per author) indexing every distinct species the author has ever confirmed via kind 2473. Each species is a positional `i`/`n` pair — the Wikidata entity URI followed immediately by the scientific binomial name — emitted in chronological order of first detection. Ditto renders a Birdex as a tiled grid of species, each tile showing the Wikipedia thumbnail with the common name overlaid. In feeds, only the most recent few tiles are shown with a "+N" capstone mirroring how kind 3 follow lists preview members; the post-detail page shows every species.
-- **Kind 30621 — Custom Constellation.** An addressable event (`d` tag) representing a single user-drawn star figure. Each `edge` tag (`["edge", from, to]`) references two Hipparcos catalog numbers as decimal strings — e.g. `["edge", "32349", "37279"]` for Sirius → Procyon. Required tags: `d`, `title`, `alt`, and at least one valid `edge`. The `content` field is a freeform description. Ditto renders constellations as a stylized SVG star-map (gnomonically projected onto a tangent plane at the figure's centroid, with stars sized by magnitude) using a bundled Hipparcos catalog that is code-split so the data only loads when a constellation is actually viewed.
+- **Kind 2473 — Bird Detection.** A regular event representing a single identified bird observation. The species is identified by a NIP-73 `i`/`k` pair pointing at the species' Wikidata entity URI (e.g. `https://www.wikidata.org/entity/Q26825` for the American Robin). The `content` field holds an optional freeform human note about the detection. Required tags: NIP-31 `alt`, NIP-73 `i` (Wikidata URL) + `k` (`web`). Zorua renders detections as a species card with the Wikipedia thumbnail, common/scientific name, and article summary.
+- **Kind 12473 — Birdex.** A replaceable event (one per author) indexing every distinct species the author has ever confirmed via kind 2473. Each species is a positional `i`/`n` pair — the Wikidata entity URI followed immediately by the scientific binomial name — emitted in chronological order of first detection. Zorua renders a Birdex as a tiled grid of species, each tile showing the Wikipedia thumbnail with the common name overlaid. In feeds, only the most recent few tiles are shown with a "+N" capstone mirroring how kind 3 follow lists preview members; the post-detail page shows every species.
+- **Kind 30621 — Custom Constellation.** An addressable event (`d` tag) representing a single user-drawn star figure. Each `edge` tag (`["edge", from, to]`) references two Hipparcos catalog numbers as decimal strings — e.g. `["edge", "32349", "37279"]` for Sirius → Procyon. Required tags: `d`, `title`, `alt`, and at least one valid `edge`. The `content` field is a freeform description. Zorua renders constellations as a stylized SVG star-map (gnomonically projected onto a tangent plane at the figure's centroid, with stars sized by magnitude) using a bundled Hipparcos catalog that is code-split so the data only loads when a constellation is actually viewed.
 
 ### Geocaching (Kinds 37516, 7516)
 
@@ -605,13 +605,13 @@ Kind 16158 (replaceable) describes a weather station's configuration: name, geoh
 **Author:** Danifra
 **Spec:** https://github.com/Danidfra/nostr-pet/blob/production/NIP.md
 **App:** https://nostr-pet.vercel.app
-**See also:** [Blobbi tag schema](docs/blobbi/blobbi-tag-schema.md) (Ditto-specific integration details)
+**See also:** [Blobbi tag schema](docs/blobbi/blobbi-tag-schema.md) (Zorua-specific integration details)
 
 NIP-BB defines a virtual pet lifecycle on Nostr. Kind 31124 (addressable) holds the current pet state across three stages (egg, baby, adult) with stats, appearance, and personality traits. Kind 14919 logs individual interactions, kind 14920 records breeding events, kind 14921 stores immutable lifecycle records, and kind 11125 (replaceable) holds the owner's profile with coins, achievements, and inventory.
 
 #### Kind 11125 `content` JSON — `missions` field
 
-The `content` of kind 11125 is a JSON object. Ditto extends it with a `missions` field that tracks daily and evolution mission progress:
+The `content` of kind 11125 is a JSON object. Zorua extends it with a `missions` field that tracks daily and evolution mission progress:
 
 ```jsonc
 {
@@ -922,22 +922,22 @@ Silent-payment donations MUST NOT publish a Nostr receipt. Doing so would defeat
 
 Clients MUST verify each kind 8333 event on-chain before counting it toward the campaign total, per the verification rules in the Kind 8333 section above. The campaign-wallet verification mode matches tx outputs against the campaign's declared `w` address rather than against derived Taproot addresses.
 
-### Ditto Implementation Notes
+### Zorua Implementation Notes
 
-Ditto is not a campaign-management app — Agora is the canonical place to author campaigns. Ditto renders kind 33863 events:
+Zorua is not a campaign-management app — Agora is the canonical place to author campaigns. Zorua renders kind 33863 events:
 
 - in the home feed and profile feeds (toggle: `feedIncludeCampaigns`, default on);
 - on a campaign's `/:nip19` route (its `naddr1…` link) via the standard addressable-event detail page, which renders the markdown story through the same pipeline as NIP-23 articles;
 - as quote-embeds inside other notes, with banner + title + summary;
 - as `Commenting on @{author}'s fundraiser` in NIP-22 comment threads anchored to the campaign coordinate.
 
-Ditto **does** support donating to a campaign from inside the app:
+Zorua **does** support donating to a campaign from inside the app:
 
 - The action-bar zap button on a campaign post and the in-dialog **Zap** button route through `useCampaignZap` to send Bitcoin to the campaign's declared `w` endpoint. On-chain donations publish a campaign-mode kind 8333 receipt (with `a` and `K` tags, no `p` tag). Silent-payment donations publish no Nostr event, preserving SP unlinkability.
 - The Donate dialog also exposes a BIP-21 QR + "Open native wallet" path for users without a PSBT-capable signer.
 - The "raised" headline on the campaign card is fetched directly from the on-chain `w` address (cumulative `funded_txo_sum` from the configured Esplora endpoint, default mempool.space). Donations count regardless of whether the donor published a Nostr receipt; the number does not regress when the beneficiary spends from the address. Silent-payment-only campaigns show no aggregate.
 
-Ditto does NOT consult `agora.moderation` labels for surfacing decisions — every parseable kind 33863 event renders.
+Zorua does NOT consult `agora.moderation` labels for surfacing decisions — every parseable kind 33863 event renders.
 
 ---
 
