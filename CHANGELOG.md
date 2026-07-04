@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.28.4] - 2026-07-04
+
+A follow-up fix to 2.28.3: a few more leftover references to the removed on-chain zap feature were still crashing the post detail page. They're now fully cleaned up.
+
+### Fixed
+- Fixed a remaining crash on the post detail page caused by leftover on-chain zap code missed in the 2.28.3 fix
+
 ## [2.28.3] - 2026-07-04
 
 Fixes a crash when opening a post detail page for an old on-chain Bitcoin zap. The page now renders those posts normally without the removed on-chain zap card.

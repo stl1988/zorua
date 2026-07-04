@@ -1391,7 +1391,6 @@ function PostDetailContent({ event }: { event: NostrEvent }) {
     !isCampaign &&
     !isVanish &&
     !isZap &&
-    !isOnchainZap &&
     !isProfile &&
     !isBlobbiState &&
     !isBadgeAward;
@@ -1642,8 +1641,8 @@ function PostDetailContent({ event }: { event: NostrEvent }) {
   }, [triggerBlobbiReaction]);
 
   const parentHints = useMemo(
-    () => (isTextNote || isReaction || isRepost || isZap || isOnchainZap || isPollVote ? getParentEventHints(event) : undefined),
-    [event, isTextNote, isReaction, isRepost, isZap, isOnchainZap, isPollVote],
+    () => (isTextNote || isReaction || isRepost || isZap || isPollVote ? getParentEventHints(event) : undefined),
+    [event, isTextNote, isReaction, isRepost, isZap, isPollVote],
   );
   const parentEventId = parentHints?.id;
 
@@ -1917,7 +1916,7 @@ function PostDetailContent({ event }: { event: NostrEvent }) {
             eventId={parentEventId}
             relays={parentHints?.relayHint ? [parentHints.relayHint] : undefined}
             authorHint={parentHints?.authorHint}
-            collapseAfter={isReaction || isRepost || isZap || isOnchainZap || isPollVote ? 0 : undefined}
+            collapseAfter={isReaction || isRepost || isZap || isPollVote ? 0 : undefined}
           />
         </div>
       )}
