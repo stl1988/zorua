@@ -25,7 +25,7 @@ import { cn } from '@/lib/utils';
 import { BlobbiStageVisual } from '@/blobbi/ui/BlobbiStageVisual';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { fetchFreshBlobbonautProfile } from '@blobbi-kit/core/fetchFreshBlobbonautProfile';
+import { fetchFreshBlobbonautProfile } from '@/lib/fetchFreshBlobbonautProfile';
 
 import {
   KIND_BLOBBI_STATE,
