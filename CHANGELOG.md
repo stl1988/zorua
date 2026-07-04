@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.28.2] - 2026-07-04
+
+This release rebrands the app as Zorua, introduces a new dark grey and dark red default theme, and removes on-chain Bitcoin zaps. Sending Bitcoin using your Nostr key as a Taproot address links your on-chain identity directly to your Nostr identity — a privacy risk that undermines plausible deniability. Lightning zaps remain fully supported.
+
+### Added
+- New Zorua theme preset: very dark grey background with dark red accents, available in the theme picker
+
+### Changed
+- App rebranded from Ditto to Zorua with new name, icons, and default color scheme
+- Default dark and light themes now use dark grey and dark red instead of indigo and purple
+
+### Removed
+- On-chain Bitcoin zaps: sending Bitcoin via your Nostr-derived Taproot address is no longer possible. This feature linked your on-chain identity to your Nostr pubkey, creating a privacy and plausible deniability risk. Lightning zaps are unaffected
+
 ## [2.28.1] - 2026-07-04
 
 A small patch to keep the party going: birthday celebrations now linger six hours past midnight, so night owls and friends in earlier timezones don't miss the balloons. Also fixes Blobbi hatching so your freshly hatched Blobbi gets its evolution missions right away, hatching counts toward your care streak, and naming your new friend no longer wipes its missions.
